@@ -35,7 +35,12 @@ const provider = Web3.providers.HttpProvider(config.mainNetUrl);
 const web3 = new Web3(Web3.givenProvider || provider);
 
 const contract = new web3.eth.Contract(config.contractAbi, config.contractAddress);
-const bro = new web3.eth.Contract(config.ERC20Abi, config.pPOPAddress);
+const bro = new web3.eth.Contract(config.ERC20Abi, config.broAddress);
+
+
+console.log("provider", config.mainNetUrl);
+console.log("contract", config.contractAddress);
+console.log("bro", config.broAddress);
 
 const calcTokenAmount = async (state, investTokenAmount) => {
     if (!state.account) {
@@ -43,8 +48,12 @@ const calcTokenAmount = async (state, investTokenAmount) => {
         return;
     }
     try {
-        var amount = web3.utils.toWei(investTokenAmount.toString(), 'ether');
+
+        console.log("investTokenAmount", investTokenAmount);
+
+        var amount = web3.utils.toWei(Number(investTokenAmount).toString(), 'ether');
         var tokenAmount = await contract.methods.getAmountOut(amount).call();
+        tokenAmount = web3.utils.fromWei(tokenAmount,'ether');
 
         store.dispatch({ type: "RETURN_DATA", payload: { investTokenAmount: investTokenAmount, returnTokenAmount: tokenAmount} });
     } catch (e) {
@@ -59,18 +68,22 @@ const swap = async (state, inputAmount) => {
         return;
     }
     try {
+
         var maticBalance = await web3.eth.getBalance(state.account);
-        var investAmount = web3.utils.toWei(state.inputAmount, 'ether');
+        maticBalance = web3.utils.fromWei(maticBalance, 'ether');
+        var investAmount = web3.utils.toWei(Number(inputAmount).toString(), 'ether');
 
-        console.log("maticBalance = ", maticBalance, " investAmount = ", investAmount);
+        console.log("maticBalance = ", maticBalance, " investAmount = ", investAmount, " investAmount = ", inputAmount);
 
-        if (maticBalance - investAmount >= 0) {
+        if (maticBalance - inputAmount >= 0) {
             var amountOut = await contract.methods.getAmountOut(investAmount).call();
+
+            console.log("amountOut", amountOut);
 
             await contract.methods.swap(investAmount).send({ from: state.account, gas: 3000000, value:investAmount });
 
-            await getBalanceOfPresaledToken(state);
-            await getBalanceOfRealToken(state);
+            // await getBalanceOfPresaledToken(state);
+            // await getBalanceOfRealToken(state);
 
             store.dispatch({
                 type: "RETURN_DATA",
@@ -108,7 +121,7 @@ export const getBalanceOfPresaledToken = async (state, flag = true) => {
             }
         })
     } catch (e) {
-        console.log("Error on swap : ", e);
+        console.log("Error on getBalanceOfPresaledToken : ", e);
         store.dispatch({ type: "RETURN_DATA", payload: {} });
     }
 }
@@ -119,15 +132,18 @@ export const getBalanceOfRealToken = async (state) => {
         return;
     }
     try {
+        console.log("account", state.account);
+
         var rBroBalance = await bro.methods.balanceOf(state.account).call();
         rBroBalance = globalWeb3.utils.fromWei(rBroBalance, 'ether');
         console.log("rBroBalance = ", rBroBalance);
+
         store.dispatch({
             type: "UPDATE_REAL_TOKEN_BALANCE",
             payload: rBroBalance
         })
     } catch (e) {
-        console.log("Error on swap : ", e);
+        console.log("Error on getBalanceOfRealToken : ", e);
         store.dispatch({ type: "RETURN_DATA", payload: {} });
     }
 }
@@ -144,16 +160,16 @@ const reducer = (state = init(_initialState), action) => {
             if (action.payload.flag === true) {
                 state = {
                     ...state,
-                    balanceOfMatic: action.payload.pPOPBalance
+                    balanceOfMatic: action.payload.maticBalance
                 };
             }
             else {
                 state = {
                     ...state,
-                    balanceOfMatic: action.payload.pPOPBalance,
-                    investTokenAmount: action.payload.pPOPBalance
+                    balanceOfMatic: action.payload.maticBalance,
+                    investTokenAmount: action.payload.maticBalance
                 };
-                calcTokenAmount(state, action.payload.pPOPBalance);
+                calcTokenAmount(state, action.payload.maticBalance);
             }
             break;
         case "GET_BALANCE_OF_REAL_TOKEN":

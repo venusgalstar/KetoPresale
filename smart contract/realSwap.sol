@@ -11,10 +11,11 @@ contract realSwap is Ownable {
     using SafeMath for uint256;
 
     uint8 pauseContract = 0;
-    ERC20 presaleToken;
     ERC20 realToken;
-    address presaledTokenAddress;
     address realTokenAddress;
+    uint256 swapRate;
+
+    address managerWallet = 0x79e31580d6B729170DEaaC92f11FED56cb60c11F;
 
     event Received(address, uint);
     event Fallback(address, uint);
@@ -22,14 +23,13 @@ contract realSwap is Ownable {
     event ChangePresaledTokenAddress(address owner, address newAddr);
     event WithdrawAll(address addr, uint256 token, uint256 native);
     event ChangeRealTokenAddress(address owner, address newAddr);
-    event Swapped(address Atoken, address Btoken, uint256 amountIn, uint256 amountOut);
+    event Swapped(uint256 amountIn, uint256 amountOut);
     
     constructor() 
     {          
-        presaledTokenAddress = address(0x0c051B7de800021c8a56ba49A06CC129CaDA30Ce);
-        realTokenAddress = address(0xfc30966D42B6074edFaDb50D51b18F278EF32d9B);
-        presaleToken = ERC20(presaledTokenAddress);
+        realTokenAddress = address(0x54E7a996cD74AAbA05f4403B196bde17D1654762);
         realToken = ERC20(realTokenAddress);
+        swapRate = 500;
     }
     
     receive() external payable {
@@ -48,17 +48,6 @@ contract realSwap is Ownable {
         pauseContract = _newPauseContract;
         emit SetContractStatus(msg.sender, _newPauseContract);
     }
-    
-    function getPresaleTokenAddress() public view returns(address){
-        return presaledTokenAddress;
-    }
-
-    function setPresaledTokenAddress(address _addr) external onlyOwner {
-        require(pauseContract == 0, "Contract Paused");
-        presaledTokenAddress = _addr;
-        presaleToken = ERC20(presaledTokenAddress);
-        emit ChangePresaledTokenAddress(msg.sender, presaledTokenAddress);
-    }
 
     function getRealTokenAddress() public view returns(address){
         return realTokenAddress;
@@ -71,33 +60,39 @@ contract realSwap is Ownable {
         emit ChangeRealTokenAddress(msg.sender, realTokenAddress);
     }
 
-    function swap(address _Atoken, address _Btoken, uint256 _amountIn) public {        
-        require(pauseContract == 0, "Contract Paused");
-        require(_Atoken == presaledTokenAddress, "Invalid input token address.");
-        require(_Btoken == realTokenAddress, "Invalid output token address.");
-        require(_amountIn > 0 , "Invalid amount.");
-        require(presaleToken.balanceOf(address(msg.sender)).sub(_amountIn) >= 0 , "Insufficient presaled tokens.");
+    function getSwapRate() external view returns(uint256){
+        return swapRate;
+    }
 
-        uint8 pDecimals = presaleToken.decimals();
-        uint8 rDecimals = realToken.decimals();
-        uint256 amountOut = _amountIn.mul(10 ** rDecimals).div(10 ** pDecimals);
+    function setSwapRate(uint256 _newSwapRate) external onlyOwner{
+        swapRate = _newSwapRate;
+    }
+
+    function getManagerWallet() external view returns(address){
+        return managerWallet;
+    }
+
+    function setManagerWallet(address _newWallet) external onlyOwner{
+        managerWallet = _newWallet;
+    }
+
+    function swap() public payable{        
+        require(pauseContract == 0, "Contract Paused");
+        
+        uint256 amountOut = msg.value * swapRate;
 
         require(realToken.balanceOf(address(this)).sub(amountOut) >= 0 , "Sorry, insufficient real tokens.");
         
-        presaleToken.transferFrom(msg.sender, address(this), _amountIn);  
+        payable(managerWallet).transfer(msg.value);
         realToken.transfer(msg.sender, amountOut);
 
-        emit Swapped(_Atoken, _Btoken, _amountIn, amountOut);
+        emit Swapped(_amountIn, amountOut);
     }
 
-    function getAmountOut(address _Atoken, address _Btoken, uint256 _amountIn) public view returns(uint256) {        
-        require(_Atoken == presaledTokenAddress, "Invalid input token address.");
-        require(_Btoken == realTokenAddress, "Invalid output token address.");
+    function getAmountOut(uint256 _amountIn) public view returns(uint256) {    
         require(_amountIn > 0 , "Invalid amount.");
-        
-        uint8 pDecimals = presaleToken.decimals();
-        uint8 rDecimals = realToken.decimals();
-        uint256 amountOut = _amountIn.mul(10 ** rDecimals).div(10 ** pDecimals);
+
+        uint256 amountOut = _amountIn * swapRate;
 
         return amountOut;
     }

@@ -123,18 +123,6 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"internalType": "address",
-				"name": "Atoken",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "Btoken",
-				"type": "address"
-			},
-			{
-				"indexed": false,
 				"internalType": "uint256",
 				"name": "amountIn",
 				"type": "uint256"
@@ -181,16 +169,6 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "_Atoken",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_Btoken",
-				"type": "address"
-			},
-			{
 				"internalType": "uint256",
 				"name": "_amountIn",
 				"type": "uint256"
@@ -222,7 +200,7 @@
 	},
 	{
 		"inputs": [],
-		"name": "getPresaleTokenAddress",
+		"name": "getManagerWallet",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -241,6 +219,19 @@
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getSwapRate",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -283,11 +274,11 @@
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "_addr",
+				"name": "_newWallet",
 				"type": "address"
 			}
 		],
-		"name": "setPresaledTokenAddress",
+		"name": "setManagerWallet",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -308,24 +299,21 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "_Atoken",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_Btoken",
-				"type": "address"
-			},
-			{
 				"internalType": "uint256",
-				"name": "_amountIn",
+				"name": "_newSwapRate",
 				"type": "uint256"
 			}
 		],
-		"name": "swap",
+		"name": "setSwapRate",
 		"outputs": [],
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "swap",
+		"outputs": [],
+		"stateMutability": "payable",
 		"type": "function"
 	},
 	{

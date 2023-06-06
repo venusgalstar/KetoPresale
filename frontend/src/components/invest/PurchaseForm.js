@@ -13,8 +13,10 @@ const PurchaseForm = () => {
     const account = useSelector(state => state.account);
     const returnTokenAmount = useSelector(state => state.returnTokenAmount);
     const investTokenAmount = useSelector(state => state.investTokenAmount);
-    const balanceOfPresaleToken = useSelector(state => state.balanceOfPresaleToken);
+    const balanceOfMatic = useSelector(state => state.balanceOfMatic);
     const balanceOfRealToken = useSelector(state => state.balanceOfRealToken);
+
+    console.log(balanceOfMatic);
 
     const swap = () => {
         if(Number(invest) > 0) dispatch({ type: "SWAP_TOKEN", payload: { investTokenAmount: invest } });
@@ -101,8 +103,8 @@ const PurchaseForm = () => {
                             <div className="amoutToken">
                                 <label>From</label>                                    
                                 { 
-                                balanceOfPresaleToken >= 0 ?
-                                    <span>Balance : {balanceOfPresaleToken}</span>
+                                balanceOfMatic >= 0 ?
+                                    <span>Balance : {balanceOfMatic}</span>
                                     :
                                     <span>Balance : 0 </span>
                                 }
