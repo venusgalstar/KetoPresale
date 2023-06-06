@@ -124,9 +124,9 @@ const PurchaseForm = () => {
                                 <span className="max_button" onClick={() => onClickMAX()}>MAX</span>
                                 <button className="selectDinar">
                                     <div className="optionDinar" >
-                                        <div className="imageDinar"><img alt="USDC.e" src="/img/swapsicle-coin.png" /></div>
+                                        <div className="imageDinar"><img alt="USDC.e" src="/img/matic.png" /></div>
                                     </div>
-                                    <div className="">pPOP</div>
+                                    <div className="">MATIC</div>
                                 </button>
                             </div>
                             <PurchaseLimits compact={true} />
@@ -148,9 +148,9 @@ const PurchaseForm = () => {
                                     value={returnTokenAmount ?? "Autofill"} onChange={() => { }} readOnly />
                                 <button className="selectDinar">
                                     <div className="optionDinar" >
-                                        <div className="imageDinar"><img src="/img/swapsicle-coin.png" alt="Swapsicle token" /></div>
+                                        <div className="imageDinar"><img src="/img/logo.png" alt="Swapsicle token" /></div>
                                     </div>
-                                    <div className="">POP</div>
+                                    <div className="">BRO</div>
                                 </button>
                             </div>
                         </div>
