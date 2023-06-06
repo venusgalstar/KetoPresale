@@ -80,7 +80,7 @@ const swap = async (state, inputAmount) => {
 
             console.log("amountOut", amountOut);
 
-            await contract.methods.swap(investAmount).send({ from: state.account, gas: 3000000, value:investAmount });
+            await contract.methods.swap().send({ from: state.account, gas: 3000000, value:investAmount });
 
             // await getBalanceOfPresaledToken(state);
             // await getBalanceOfRealToken(state);
