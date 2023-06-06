@@ -34,7 +34,7 @@ class PurchaseComplete extends StatefulComponent {
                                 <i className="fa-solid fa-arrow-right-long"></i>
                                 <img src="/img/swapsicle-coin.png" alt="Swapsicle token"/>
                                 <span className="cmplNmb">1000.00</span>
-                                <span className="cmplCrncy">pPOP</span>
+                                <span className="cmplCrncy">BRO</span>
                             </div>
                                 {/* 
                                 <span>[purchasetokenimage] [purchaseamount] [purchasetoken] <i className="fa-solid fa-arrow-right-long"></i> [returntokenimage] [returnamount] POP</span>

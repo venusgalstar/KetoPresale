@@ -6,7 +6,6 @@ class ProjectDescription extends StatefulComponent {
         return (
             <>
                 <div className="project-description">
-                    <img className="swapPresale" src="/img/swapsicle-presale.png" alt="Swapsicle Logo"/>
                     {
                         this.props.imageUrl ?
                             <div className="project-image"><img src={this.props.imageUrl} alt={this.props.name}/></div>

@@ -7,13 +7,13 @@ class Admin extends React.Component {
         return (
             <>
                 <h1>Admin</h1>
-                <h2>Settings for Swapsicle Whitelist</h2>
+                <h2>Settings for Bromidian Whitelist</h2>
                 <div>Set presale or whitelist: Presale</div>
                 <div>Set project description: ...</div>
                 <div>Set project whitepaper link: ...</div>
                 <div>Set destination wallet: ...</div>
                 <div>Set purchase token: ...</div>
-                <div>Set payout token: pPOP</div>
+                <div>Set payout token: BRO</div>
             </>
         )
     }

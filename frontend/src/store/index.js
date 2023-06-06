@@ -7,21 +7,21 @@ const _initialState = {
     account: "",
     purchaseAllowed: false,
 
-    name: "Swapsicle",
+    name: "Bromidian",
     imageUrl: "",
     introTitle: "Swap your presale tokens",
-    introDescription: "Now you have your pPOPS you can now exchange them for the POPs token that is tradable on swapsicle DEX.",
+    introDescription: "Now you have your BRO you can now exchange them for the POPs token that is tradable on Bromidian DEX.",
     purchasedTitle: "Congratulations!",
-    purchasedDescription: "Purchase complete. Your pPOP tokens will be immediately sent to your wallet.",
+    purchasedDescription: "Purchase complete. Your BRO tokens will be immediately sent to your wallet.",
     whitepaperUrl: "/docs/Swapsicle_Whitepaper_v1.2.pdf",
-    investToken: "USDC.e",
+    investToken: "MATIC",
     investTokenAmount: 0,
-    returnToken: "pPOP",
+    returnToken: "BRO",
     returnTokenAmout: "",
-    minInvest: "$ 100",
-    maxInvest: "$ 20,000",
+    minInvest: "1 MATIC",
+    maxInvest: "1000 MATIC",
     transaction: "",
-    balanceOfPresaleToken: 0,
+    balanceOfMatic: 0,
     balanceOfRealToken: 0
 
 }
@@ -35,8 +35,7 @@ const provider = Web3.providers.HttpProvider(config.mainNetUrl);
 const web3 = new Web3(Web3.givenProvider || provider);
 
 const contract = new web3.eth.Contract(config.contractAbi, config.contractAddress);
-const pPOPs = new web3.eth.Contract(config.ERC20Abi, config.pPOPAddress);
-const rPOPs  = new web3.eth.Contract(config.ERC20Abi, config.rPOPAddress);
+const bro = new web3.eth.Contract(config.ERC20Abi, config.pPOPAddress);
 
 const calcTokenAmount = async (state, investTokenAmount) => {
     if (!state.account) {
@@ -44,173 +43,146 @@ const calcTokenAmount = async (state, investTokenAmount) => {
         return;
     }
     try {
-        var pPOPDecimals = 18;
-        var amount = new web3.utils.toBN(web3.utils.toWei(Number(investTokenAmount).toString(), 'ether'));
-        amount = amount.mul(new web3.utils.toBN(Math.pow(10, pPOPDecimals).toString()));
-        
-        var rPOPDecimals = await rPOPs.methods.decimals().call();
-        amount = amount.div(new web3.utils.toBN(Math.pow(10, rPOPDecimals).toString()));
-        var tokenAmount = web3.utils.fromWei(amount, 'ether');
+        var amount = web3.utils.toWei(investTokenAmount.toString(), 'ether');
+        var tokenAmount = await contract.methods.getAmountOut(amount).call();
 
-        store.dispatch({ type: "RETURN_DATA", payload: { investTokenAmount: investTokenAmount, returnTokenAmount: tokenAmount, returnCoinAmount: tokenAmount } });
+        store.dispatch({ type: "RETURN_DATA", payload: { investTokenAmount: investTokenAmount, returnTokenAmount: tokenAmount} });
     } catch (e) {
         console.log("error: ", e);
-        store.dispatch({ type: "RETURN_DATA", payload: { investTokenAmount: 0, returnTokenAmount: 0, returnCoinAmount: 0 } });
+        store.dispatch({ type: "RETURN_DATA", payload: { investTokenAmount: 0, returnTokenAmount: 0 } });
     }
 }
 
-const swap = async (state, inputAmount) => {    
+const swap = async (state, inputAmount) => {
     if (!state.account) {
         alertMsg("Please connect metamask!");
         return;
     }
-    try{
-        var pPOPBalance = await pPOPs.methods.balanceOf(state.account).call();  
-        var pPOPDecimals = 18;
-        var allowances =  await pPOPs.methods.allowance(state.account, config.contractAddress).call();
-        allowances = web3.utils.toBN(allowances);
-        let amount = ""; let pointIdx = inputAmount?.toString().indexOf(".");
-        if(pointIdx !== -1)
-        {   
-            let len = inputAmount.toString().length;
-            let m = len - pointIdx - 1;
-            let upper = inputAmount.toString().substring(0, pointIdx);
-            let lower = inputAmount.toString().substring(pointIdx+1, len);
-            upper += lower;
+    try {
+        var maticBalance = await web3.eth.getBalance(state.account);
+        var investAmount = web3.utils.toWei(state.inputAmount, 'ether');
 
-            upper = new web3.utils.toBN(upper);
-            amount = upper.mul((new web3.utils.toBN(Math.pow(10, pPOPDecimals - m).toString())));
-        }
-        else 
-        {
-            amount = new web3.utils.toBN(inputAmount).mul(new web3.utils.toBN(Math.pow(10, pPOPDecimals).toString()));
-            amount = new web3.utils.toBN(amount);
-        }
-        console.log("pPOPBalance = ", pPOPBalance," amount = ", amount.toString());
-        
-        if(pPOPBalance - amount >= 0)
-        {            
-            var amountOut = await contract.methods.getAmountOut(config.pPOPAddress, config.rPOPAddress, amount).call();
+        console.log("maticBalance = ", maticBalance, " investAmount = ", investAmount);
 
-            if(allowances - web3.utils.toBN(amount) < 0)
-            {
-                await pPOPs.methods.approve(config.contractAddress, web3.utils.toWei((2**64-1).toString(),'ether')).send({ from: state.account });
-            }
-            await contract.methods.swap(config.pPOPAddress, config.rPOPAddress, amount).send({ from: state.account, gas: 3000000 }); 
-            
+        if (maticBalance - investAmount >= 0) {
+            var amountOut = await contract.methods.getAmountOut(investAmount).call();
+
+            await contract.methods.swap(investAmount).send({ from: state.account, gas: 3000000, value:investAmount });
+
             await getBalanceOfPresaledToken(state);
             await getBalanceOfRealToken(state);
 
             store.dispatch({
-                type: "RETURN_DATA", 
+                type: "RETURN_DATA",
                 payload: {
-                    investTokenAmount: inputAmount, 
-                    returnTokenAmount: globalWeb3.utils.fromWei(amountOut, 'ether'), 
-                    returnCoinAmount: globalWeb3.utils.fromWei(amountOut, 'ether'), 
+                    investTokenAmount: inputAmount,
+                    returnTokenAmount: globalWeb3.utils.fromWei(amountOut, 'ether'),
                 }
-            });           
+            });
         }
-        else 
-        {
-            alertMsg("You don't have enough pPOPs.");
+        else {
+            alertMsg("You don't have enough MATIC.");
             store.dispatch({ type: "RETURN_DATA", payload: {} });
         }
-    }catch(e){
+    } catch (e) {
         console.log("Error on swap : ", e);
         store.dispatch({ type: "RETURN_DATA", payload: {} });
     }
 }
 
-export const getBalanceOfPresaledToken = async (state, flag = true) => {    
+export const getBalanceOfPresaledToken = async (state, flag = true) => {
     if (!state.account) {
         alertMsg("Please connect metamask!");
         return;
     }
-    try{
-        var pPOPBalance = await pPOPs.methods.balanceOf(state.account).call();     
-        pPOPBalance =  globalWeb3.utils.fromWei(pPOPBalance, 'ether');
-        console.log("pPOPBalance = ", pPOPBalance);
+    try {
+        var maticBalance = await web3.eth.getBalance(state.account);
+        maticBalance = web3.utils.fromWei(maticBalance, 'ether');
+
+        console.log("maticBalance = ", maticBalance);
         store.dispatch({
             type: "UPDATE_PRESALE_TOKEN_BALANCE",
             payload: {
-                pPOPBalance,
+                maticBalance,
                 flag
             }
         })
-    }catch(e){
+    } catch (e) {
         console.log("Error on swap : ", e);
         store.dispatch({ type: "RETURN_DATA", payload: {} });
-    }    
+    }
 }
 
-export const getBalanceOfRealToken = async (state) => {    
+export const getBalanceOfRealToken = async (state) => {
     if (!state.account) {
         alertMsg("Please connect metamask!");
         return;
     }
-    try{
-        var rPOPBalance = await rPOPs.methods.balanceOf(state.account).call();     
-        rPOPBalance =  globalWeb3.utils.fromWei(rPOPBalance, 'ether');
-        console.log("rPOPBalance = ", rPOPBalance);
+    try {
+        var rBroBalance = await bro.methods.balanceOf(state.account).call();
+        rBroBalance = globalWeb3.utils.fromWei(rBroBalance, 'ether');
+        console.log("rBroBalance = ", rBroBalance);
         store.dispatch({
             type: "UPDATE_REAL_TOKEN_BALANCE",
-            payload: rPOPBalance
+            payload: rBroBalance
         })
-    }catch(e){
+    } catch (e) {
         console.log("Error on swap : ", e);
         store.dispatch({ type: "RETURN_DATA", payload: {} });
-    }    
+    }
 }
 
 const reducer = (state = init(_initialState), action) => {
     switch (action.type) {
         case "UPDATE_REAL_TOKEN_BALANCE":
-            state = {...state, 
+            state = {
+                ...state,
                 balanceOfRealToken: action.payload
             };
             break;
-        case "UPDATE_PRESALE_TOKEN_BALANCE":  
-            if(action.payload.flag === true)
-            {                     
-                state = {...state, 
-                    balanceOfPresaleToken: action.payload.pPOPBalance
-                }; 
+        case "UPDATE_PRESALE_TOKEN_BALANCE":
+            if (action.payload.flag === true) {
+                state = {
+                    ...state,
+                    balanceOfMatic: action.payload.pPOPBalance
+                };
             }
             else {
-                state = {...state, 
-                    balanceOfPresaleToken: action.payload.pPOPBalance,
+                state = {
+                    ...state,
+                    balanceOfMatic: action.payload.pPOPBalance,
                     investTokenAmount: action.payload.pPOPBalance
                 };
                 calcTokenAmount(state, action.payload.pPOPBalance);
             }
             break;
-        case "GET_BALANCE_OF_REAL_TOKEN":            
+        case "GET_BALANCE_OF_REAL_TOKEN":
             if (!checkNetwork(state.chainId)) {
                 changeNetwork();
                 return state;
-            }            
-            getBalanceOfRealToken(state);            
+            }
+            getBalanceOfRealToken(state);
             break;
-        case "GET_BALANCE_AND_SET_AMOUNT_OF_pPOP_TOKEN":            
+        case "GET_BALANCE_AND_SET_AMOUNT_OF_pPOP_TOKEN":
             if (!checkNetwork(state.chainId)) {
                 changeNetwork();
                 return state;
-            }            
-            getBalanceOfPresaledToken(state, false);            
+            }
+            getBalanceOfPresaledToken(state, false);
             break;
         case "GET_BALANCE_OF_PRESALED_TOKEN":
             if (!checkNetwork(state.chainId)) {
                 changeNetwork();
                 return state;
-            }            
-            getBalanceOfPresaledToken(state);            
+            }
+            getBalanceOfPresaledToken(state);
             break;
 
         case "SWAP_TOKEN":
             if (!checkNetwork(state.chainId)) {
                 changeNetwork();
                 return state;
-            }            
+            }
             swap(state, action.payload.investTokenAmount);
             break;
 
@@ -222,7 +194,7 @@ const reducer = (state = init(_initialState), action) => {
             web3.eth.getAccounts((err, accounts) => {
                 store.dispatch({
                     type: 'RETURN_DATA',
-                    payload: { account: accounts[0], purchaseAllowed: true, investTokenAmount:0, returnTokenAmount: null, returnCoinAmount: null }
+                    payload: { account: accounts[0], purchaseAllowed: true, investTokenAmount: 0, returnTokenAmount: null}
                 });
             })
             break;
@@ -239,11 +211,11 @@ const reducer = (state = init(_initialState), action) => {
             if (!checkNetwork(state.chainId)) {
                 changeNetwork();
                 return state;
-            }              
-            state = {...state, 
+            }
+            state = {
+                ...state,
                 investTokenAmount: 0,
                 returnTokenAmount: 0,
-                returnCoinAmount: 0
             };
             return state;
         case 'RETURN_DATA':
