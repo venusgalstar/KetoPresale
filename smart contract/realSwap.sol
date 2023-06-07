@@ -15,7 +15,7 @@ contract realSwap is Ownable {
     address realTokenAddress;
     uint256 swapRate;
 
-    address managerWallet = 0x79e31580d6B729170DEaaC92f11FED56cb60c11F;
+    address managerWallet = 0x79CA15110241605AE97F73583F5C3f140506fb80;
 
     event Received(address, uint);
     event Fallback(address, uint);
@@ -27,7 +27,7 @@ contract realSwap is Ownable {
     
     constructor() 
     {          
-        realTokenAddress = address(0x54E7a996cD74AAbA05f4403B196bde17D1654762);
+        realTokenAddress = address(0xD09E5aef492DbBe11A74c5d1B20e3e0d19653374);
         realToken = ERC20(realTokenAddress);
         swapRate = 500;
     }
