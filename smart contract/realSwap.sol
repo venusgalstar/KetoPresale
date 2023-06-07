@@ -86,7 +86,7 @@ contract realSwap is Ownable {
         payable(managerWallet).transfer(msg.value);
         realToken.transfer(msg.sender, amountOut);
 
-        emit Swapped(_amountIn, amountOut);
+        emit Swapped(msg.value, amountOut);
     }
 
     function getAmountOut(uint256 _amountIn) public view returns(uint256) {    
