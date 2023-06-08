@@ -10,10 +10,10 @@ const _initialState = {
     name: "Bromidian",
     imageUrl: "",
     introTitle: "Swap your presale tokens",
-    introDescription: "Now you have your BRO you can now exchange them for the POPs token that is tradable on Bromidian DEX.",
+    introDescription: "Now you have your MATIC you can now exchange them for the $BRO token that is tradable on Bromidian DEX.",
     purchasedTitle: "Congratulations!",
     purchasedDescription: "Purchase complete. Your BRO tokens will be immediately sent to your wallet.",
-    whitepaperUrl: "/docs/Swapsicle_Whitepaper_v1.2.pdf",
+    whitepaperUrl: "https://robromides.com/roadmap/",
     investToken: "MATIC",
     investTokenAmount: 0,
     returnToken: "BRO",
@@ -257,7 +257,7 @@ const alertMsg = (msg) => {
 
 const checkNetwork = (chainId) => {
     if (web3.utils.toHex(chainId) !== web3.utils.toHex(config.chainId)) {
-        alertMsg("Change network to Avalanche C Chain!");
+        alertMsg("Change network to Polygon Mainnet!");
         return false;
     } else {
         return true;
