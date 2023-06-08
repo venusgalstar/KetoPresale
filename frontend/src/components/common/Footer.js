@@ -10,8 +10,8 @@ export const Footer = () => {
     return (
         <footer>
             <div className="left">
-                <a href="https://robromides.com/links/0xb11Ba783D1E5A38cb86cFAe132CB265aF08aFB42"><i className="fa-brands fa-twitter"></i></a>
-                <a href="https://medium.com/@robromides"><i className="fa-brands fa-instagram"></i></a>
+                <a href="https://twitter.com/robromides"><i className="fa-brands fa-twitter"></i></a>
+                <a href="https://instagram.com/robromidesproject"><i className="fa-brands fa-instagram"></i></a>
             </div>
             <div className="center">
                 {/* <a href="#" onClick={() => setShowModalDisclaimer(!showModalDisclaimer)}><span>Risk Disclaimer</span></a> */}
