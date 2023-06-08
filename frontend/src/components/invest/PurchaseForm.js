@@ -148,7 +148,7 @@ const PurchaseForm = () => {
                                     value={returnTokenAmount ?? "Autofill"} onChange={() => { }} readOnly />
                                 <button className="selectDinar">
                                     <div className="optionDinar" >
-                                        <div className="imageDinar"><img src="/img/logo.png" alt="Swapsicle token" /></div>
+                                        <div className="imageDinar"><img src="/img/logo.png" alt="Bro token" /></div>
                                     </div>
                                     <div className="">BRO</div>
                                 </button>
